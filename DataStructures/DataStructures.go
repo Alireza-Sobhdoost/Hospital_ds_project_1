@@ -246,3 +246,120 @@ func (pq *PriorityQueue) downHeap(index int) {
 		index = smallest
 	}
 }
+
+// Define the structure for a Hash Map
+type HashMap struct {
+	buckets [][]KeyValue
+	size    int
+	count   int // To keep track of number of elements in the map
+}
+
+// Define a structure for the key-value pair
+type KeyValue struct {
+	key   string
+	value interface{}
+}
+
+// Create a new HashMap
+func NewHashMap(size int) *HashMap {
+	return &HashMap{
+		buckets: make([][]KeyValue, size),
+		size:    size,
+		count:   0,
+	}
+}
+
+// Hash function to compute the index
+func (hm *HashMap) hash(key string) int {
+	hashValue := 0
+	for i := 0; i < len(key); i++ {
+		hashValue += int(key[i])
+	}
+	return hashValue % hm.size
+}
+
+// Resize the hash map (double the size)
+// Resize the hash map (double the size)
+func (hm *HashMap) resize() {
+	// Double the size of the hash map
+	newSize := hm.size * 2
+	newBuckets := make([][]KeyValue, newSize)
+
+	// Rehash and insert existing elements into the new bucket array
+	for _, bucket := range hm.buckets {
+		for _, kv := range bucket {
+			// Apply a hash function to the key (instead of trying kv.key % newSize)
+			index := hm.hash(kv.key) % newSize
+			newBuckets[index] = append(newBuckets[index], kv)
+		}
+	}
+
+	// Update the hash map with the resized buckets
+	hm.buckets = newBuckets
+	hm.size = newSize
+}
+
+
+// Insert a key-value pair
+func (hm *HashMap) Insert(key string, value interface{}) {
+	// Check if resizing is needed
+	if float64(hm.count)/float64(hm.size) > 0.80 {
+		hm.resize()
+	}
+
+	// Insert the key-value pair
+	index := hm.hash(key)
+	hm.buckets[index] = append(hm.buckets[index], KeyValue{key, value})
+	hm.count++
+}
+
+// Retrieve a value for a given key
+func (hm *HashMap) Get(key string) (interface{}, bool) {
+	index := hm.hash(key)
+	for _, kv := range hm.buckets[index] {
+		if kv.key == key {
+			return kv.value, true
+		}
+	}
+	return 0, false // Key not found
+}
+
+// Delete a key-value pair
+func (hm *HashMap) Delete(key string) {
+	index := hm.hash(key)
+	for i, kv := range hm.buckets[index] {
+		if kv.key == key {
+			hm.buckets[index] = append(hm.buckets[index][:i], hm.buckets[index][i+1:]...)
+			hm.count--
+			return
+		}
+	}
+}
+
+// Display the entire hash map
+func (hm *HashMap) Display() {
+	for i, bucket := range hm.buckets {
+		if len(bucket) > 0 {
+			fmt.Printf("Bucket %d: ", i)
+			for _, kv := range bucket {
+				fmt.Printf("[%s: %d] ", kv.key, kv.value)
+			}
+			fmt.Println()
+		}
+	}
+}
+
+
+
+// DataBase := DataStructures.NewHashMap(100)
+// user , err := Auth.Signup("1", "John", "Doe", "password", "Patient", 20)
+// if err != nil {
+// 	log.Fatal(err)
+// }
+// p1 := user.(*Entities.Patient)
+// fmt.Println(p1.FirstName)
+// DataBase.Insert(p1.ID, p1)
+// if err != nil {
+// user2 , role ,err2 := Auth.Login(*DataBase, "1", "password")
+// 	log.Fatal(err2)
+// }

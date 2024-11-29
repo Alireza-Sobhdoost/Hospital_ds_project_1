@@ -1,0 +1,93 @@
+package Auth
+
+import (
+	"project_1/Entities"
+	"project_1/DataStructures"
+	"fmt"
+	"reflect"
+)
+
+
+
+func Signup(NID, firstName, lastName, password string, args []string , age int, DataBase DataStructures.HashMap) (error) {
+	// Create a base User entity
+	user := &Entities.User{
+		ID:        NID,
+		FirstName: firstName,
+		LastName:  lastName,
+		Role: args[0],
+		Age : age,
+		Password:  password,
+	}
+
+	// Set the password (error handling)
+	err := user.SetPassword(password)
+	if err != nil {
+		return  fmt.Errorf("error setting password: %w", err)
+	}
+
+	// Create role-specific entities
+	switch args[0] {
+		case "Patient":
+			patient := &Entities.Patient{
+				User: *user,
+				PriorityToVsit: 5,
+			}
+			DataBase.Insert(NID, patient)
+			return nil
+
+		case "Doctor":
+			doctor := &Entities.Doctor{
+				User: *user,
+				Department: args[1],
+				PatientList: DataStructures.LinkedList{},
+				VisitQueue: DataStructures.NewPriorityQueue(func(a, b interface{}) bool {
+					patientA := a.(Entities.Patient)
+					patientB := b.(Entities.Patient)
+					return patientA.PriorityToVsit < patientB.PriorityToVsit
+				}),
+			}
+			DataBase.Insert(NID, doctor)
+			return nil
+
+		case "Manager":
+			manager := &Entities.Manager{
+				User: *user,
+			}
+			DataBase.Insert(NID, manager)
+			return nil
+
+		default:
+			return fmt.Errorf("invalid role: %s", args[0])
+		}
+}
+
+func Login(DataBase DataStructures.HashMap ,NID, password string) (interface{}, error) {
+
+	user, ok := DataBase.Get(NID)
+	if !ok {
+		return nil, fmt.Errorf("user not found")
+	}
+	our_type := reflect.TypeOf(user)
+	if our_type == reflect.TypeOf(&Entities.Doctor{}) {
+		userInterface := user.(*Entities.Doctor)
+		if !userInterface.ValidatePassword(password) {
+			return nil, fmt.Errorf("invalid password")
+		}
+		return userInterface, nil
+	} else if our_type == reflect.TypeOf(&Entities.Patient{}) {
+		userInterface := user.(*Entities.Patient)
+		if !userInterface.ValidatePassword(password) {
+			return nil, fmt.Errorf("invalid password")
+		}
+		return userInterface, nil
+	} else if our_type == reflect.TypeOf(&Entities.Manager{}) {
+		userInterface := user.(*Entities.Manager)
+		if !userInterface.ValidatePassword(password) {
+			return nil, fmt.Errorf("invalid password")
+		}
+		return userInterface, nil
+	}
+
+	return nil , fmt.Errorf("user not found")
+}

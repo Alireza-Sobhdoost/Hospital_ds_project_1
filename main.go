@@ -2,72 +2,89 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"project_1/DataStructures" 
+	"project_1/Entities"
+	"project_1/Auth"
+
 )
 
 func main() {
-	// Priority Queue for integers
-	intPQ := DataStructures.NewPriorityQueue(func(a, b interface{}) bool {
-		return a.(int) < b.(int) // Compare integers
-	})
-
-	intPQ.Push(5)
-	intPQ.Push(3)
-	intPQ.Push(8)
-	intPQ.Push(1)
-
-	if value, err := intPQ.Peek(); err == nil {
-		fmt.Println(value) // Should print 1
-	} else {
-		fmt.Println(err)
+	// doctor := &Entities.Doctor{
+	// 	User: Entities.User{
+	// 		ID:        "1",
+	// 		FirstName: "Alice",
+	// 		LastName:  "Smith",
+	// 	},
+	// 	Department: "Cardiology",
+	// 	PatientList: DataStructures.LinkedList{},
+	// 	VisitQueue: DataStructures.NewPriorityQueue(func(a, b interface{}) bool {
+	// 		patientA := a.(Entities.Patient)
+	// 		patientB := b.(Entities.Patient)
+	// 		return patientA.PriorityToVsit < patientB.PriorityToVsit
+	// 	}),
+	// }
+	DataBase := DataStructures.NewHashMap(100)
+	args := []string{"Doctor", "Cardiology"}
+	err := Auth.Signup("1", "Alice", "Smith", "password", args ,  20 , *DataBase)
+	
+	if err != nil {
+		log.Fatalf("Error setting password for doctor: %v", err)
 	}
 
-	if value, err := intPQ.Pop(); err == nil {
-		fmt.Println(value) // Should print 1
-	} else {
-		fmt.Println(err)
-	}
-	if value, err := intPQ.Pop(); err == nil {
-		fmt.Println(value) // Should print 3
-	} else {
-		fmt.Println(err)
-	}
-	if value, err := intPQ.Pop(); err == nil {
-		fmt.Println(value) // Should print 5
-	} else {
-		fmt.Println(err)
-	}
-	if value, err := intPQ.Pop(); err == nil {
-		fmt.Println(value) // Should print 8
-	} else {
-		fmt.Println(err)
-	}
 
-	fmt.Println(intPQ.IsEmpty()) // Should print true
+	doc , _:= Auth.Login(*DataBase, "1", "password")
+	doctor := doc.(*Entities.Doctor)
+	fmt.Printf("Doctor: %v %v, Department: %v\n", doctor.FirstName, doctor.LastName, doctor.Department)
 
-	// Priority Queue for strings
-	stringPQ := DataStructures.NewPriorityQueue(func(a, b interface{}) bool {
-		return a.(string) < b.(string) // Compare strings lexicographically
-	})
 
-	stringPQ.Push("banana")
-	stringPQ.Push("apple")
-	stringPQ.Push("cherry")
-	stringPQ.Push("date")
+	doctor.VisitQueue.Push(Entities.Patient{User: Entities.User{
+		ID:        "10",
+		FirstName: "John",
+		LastName:  "Doe",
+	}, PriorityToVsit: 3})
 
-	if value, err := stringPQ.Peek(); err == nil {
-		fmt.Println(value) // Should print "apple"
-	} else {
-		fmt.Println(err)
-	}
+	doctor.VisitQueue.Push(Entities.Patient{User: Entities.User{
+		ID:        "20",
+		FirstName: "Jane",
+		LastName:  "Smith",
+	}, PriorityToVsit: 1})
 
-	for !stringPQ.IsEmpty() {
-		if value, err := stringPQ.Pop(); err == nil {
-			fmt.Println(value) // Print elements in order: apple, banana, cherry, date
-		} else {
-			fmt.Println(err)
+	p1 := &Entities.Patient{User: Entities.User{
+		ID:        "30",
+		FirstName: "Emily",
+		LastName:  "Davis",
+	}, PriorityToVsit: 2}
+	p1.MedicalHistory = "High blood pressure"
+	fmt.Printf("Patient: %v %v, Priority: %v, Medical History: %v\n", p1.FirstName, p1.LastName, p1.PriorityToVsit, p1.MedicalHistory)
+
+	doctor.VisitQueue.Push(*p1)
+	
+	fmt.Println("Patients in visit order:")
+
+	for !doctor.VisitQueue.IsEmpty() {
+		patient, err := doctor.VisitQueue.Pop()
+		Patient := patient.(Entities.Patient)
+		if err != nil {
+			fmt.Println("Error:", err)
+			break
 		}
+		fmt.Printf("%v\n", Patient.FirstName)
 	}
 
-	fmt.Println(stringPQ.IsEmpty()) //
+	doc2 , _:= Auth.Login(*DataBase, "1", "password")
+	doctor2 := doc2.(*Entities.Doctor)
+
+	for !doctor2.VisitQueue.IsEmpty() {
+		patient, err := doctor2.VisitQueue.Pop()
+		Patient := patient.(Entities.Patient)
+		if err != nil {
+			fmt.Println("Error:", err)
+			break
+		}
+		fmt.Printf("%v\n", Patient.FirstName)
+	}
+
+
+
 }
