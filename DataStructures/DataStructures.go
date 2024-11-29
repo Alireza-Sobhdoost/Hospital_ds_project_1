@@ -324,6 +324,39 @@ func (hm *HashMap) Get(key string) (interface{}, bool) {
 	return 0, false // Key not found
 }
 
+func (hm *HashMap) GetByID(key string) (interface{}, bool) {
+	// Check if the key is "Doctors" for 2D HashMap logic
+	if key == "Doctors" {
+		// Get the doctors map from the outer HashMap
+		index := hm.hash(key)
+		for _, kv := range hm.buckets[index] {
+			if kv.key == key {
+				// Type assertion to get the inner doctors map
+				if innerMap, ok := kv.value.(*HashMap); ok {
+					return innerMap, true
+				}
+			}
+		}
+	}
+
+	// If key is a National ID, look for it directly in the "Doctors" inner map
+	for _, bucket := range hm.buckets {
+		for _, kv := range bucket {
+			if innerMap, ok := kv.value.(*HashMap); ok {
+				// Search for the doctor by National ID in the inner map
+				index := innerMap.hash(key)
+				for _, innerKV := range innerMap.buckets[index] {
+					if innerKV.key == key {
+						return innerKV.value, true
+					}
+				}
+			}
+		}
+	}
+
+	// If the key is not found
+	return nil, false
+}
 // Delete a key-value pair
 func (hm *HashMap) Delete(key string) {
 	index := hm.hash(key)

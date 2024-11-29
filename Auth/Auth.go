@@ -33,7 +33,9 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 				User: *user,
 				PriorityToVsit: 5,
 			}
-			DataBase.Insert(NID, patient)
+			DataBasePatientsInterface, _ := DataBase.Get("Patients")
+			DataBasePatients := DataBasePatientsInterface.(*DataStructures.HashMap)
+			DataBasePatients.Insert(NID, patient)
 			return nil
 
 		case "Doctor":
@@ -47,14 +49,18 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 					return patientA.PriorityToVsit < patientB.PriorityToVsit
 				}),
 			}
-			DataBase.Insert(NID, doctor)
+			DataBaseDoctorsInterface, _ := DataBase.Get("Doctors")
+			DataBaseDoctors := DataBaseDoctorsInterface.(*DataStructures.HashMap)
+			DataBaseDoctors.Insert(NID, doctor)
 			return nil
 
 		case "Manager":
 			manager := &Entities.Manager{
 				User: *user,
 			}
-			DataBase.Insert(NID, manager)
+			DataBaseManagersInterface, _ := DataBase.Get("Managers")
+			DataBaseManagers := DataBaseManagersInterface.(*DataStructures.HashMap)
+			DataBaseManagers.Insert(NID, manager)
 			return nil
 
 		default:
@@ -64,7 +70,7 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 
 func Login(DataBase DataStructures.HashMap ,NID, password string) (interface{}, error) {
 
-	user, ok := DataBase.Get(NID)
+	user, ok := DataBase.GetByID(NID)
 	if !ok {
 		return nil, fmt.Errorf("user not found")
 	}
