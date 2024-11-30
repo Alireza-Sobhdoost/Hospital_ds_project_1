@@ -32,6 +32,8 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 			patient := &Entities.Patient{
 				User: *user,
 				PriorityToVsit: 5,
+				DrugAllergies: DataStructures.NewStack(),
+				DoctorList: DataStructures.LinkedList{},
 			}
 			DataBasePatientsInterface, _ := DataBase.Get("Patients")
 			DataBasePatients := DataBasePatientsInterface.(*DataStructures.HashMap)

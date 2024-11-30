@@ -47,6 +47,8 @@ type Doctor struct {
 type Patient struct {
 	User
 	MedicalHistory string
+	DrugAllergies  *DataStructures.Stack
+	DoctorList     DataStructures.LinkedList
 	PriorityToVsit int
 }
 

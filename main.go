@@ -203,6 +203,31 @@ func Doctor_menu(doc Entities.Doctor)(int) {
 	return Intcmd
 	
 }
+
+func visit(patient Entities.Patient)() {
+	fmt.Println("==Visit==")
+	fmt.Printf("\n++Patient Information++\nFirstname: %s\nLastname:%s\nAge: %d\nID: %s\n", patient.FirstName, patient.LastName, patient.Age, patient.ID) // Use %v to handle generic types
+	fmt.Println("Does the patient need Drug ?")
+	fmt.Println("[1] Yes")
+	fmt.Println("[2] No")
+
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	if cmd == "1" {
+		fmt.Println("Please enter the drugs name or enter 0 to finish the visit")
+		for true{
+			Drugs, _ := reader.ReadString('\n')
+			Drugs = Drugs[:len(Drugs)-1]
+			if Drugs == "0" {
+				break
+			}
+			patient.DrugAllergies.Push(Drugs)
+		}
+		
+	}
+
+}
 func clear() {
 	var cmd *exec.Cmd
 
@@ -262,7 +287,12 @@ func main() {
 						if choice == 1 {
 							p , _:= currentUser.VisitQueue.Pop()
 							patient := p.(Entities.Patient)
+							visit(patient)
 							currentUser.PatientList.AddToStart(patient)
+							d , _:= patient.DrugAllergies.Peek()
+							fmt.Println("Drugs : " , d)
+							fmt.Println(patient.DrugAllergies)
+							currentUser.PatientList.Display()
 
 						} else if choice == 2 {
 							break

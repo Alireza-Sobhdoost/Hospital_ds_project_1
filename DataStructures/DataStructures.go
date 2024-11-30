@@ -18,6 +18,8 @@ type LinkedList struct {
 	Tail *Node 
 }
 
+
+
 // after initiation of our linked list Ds its time to implemet its methods
 
 func (list *LinkedList) AddToEnd(data interface{}) {
@@ -156,6 +158,11 @@ func (s *Stack) IsEmpty() bool {
 	return len(s.items) == 0
 }
 
+func NewStack() *Stack {
+	return &Stack{
+		items : [] interface{}{},
+	}
+}
 
 // implementing queue DS
 
