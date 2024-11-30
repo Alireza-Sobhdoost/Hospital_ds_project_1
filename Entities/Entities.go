@@ -56,7 +56,9 @@ type Patient struct {
 // Manager struct (inherits from User)
 type Manager struct {
 	User
-	Department string
+	Department string  
+	ToAddStack  *DataStructures.Stack
+
 }
 
 type DrugMan struct {

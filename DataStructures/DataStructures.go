@@ -464,16 +464,31 @@ func (hm *HashMap) GetRecursive(key string) (interface{}, bool) {
 }
 
 // Delete a key-Value pair
-func (hm *HashMap) Delete(key string) {
-	index := hm.hash(key)
-	for i, kv := range hm.Buckets[index] {
-		if kv.key == key {
-			hm.Buckets[index] = append(hm.Buckets[index][:i], hm.Buckets[index][i+1:]...)
-			hm.count--
-			return
+func (hm *HashMap) DeleteRecursive(key string) bool {
+	// Iterate through the Buckets of the current HashMap
+	for index, bucket := range hm.Buckets {
+		for i, kv := range bucket {
+			// If the key matches, delete it
+			if kv.key == key {
+				hm.Buckets[index] = append(bucket[:i], bucket[i+1:]...)
+				hm.count-- // Decrement count
+				return true
+			}
+
+			// If the Value is another HashMap, delete recursively
+			if innerMap, ok := kv.Value.(*HashMap); ok {
+				if innerMap.DeleteRecursive(key) {
+					// If the key was found and deleted in the inner map, return true
+					return true
+				}
+			}
 		}
 	}
+
+	// If the key wasn't found in this map or any nested map
+	return false
 }
+
 
 // Display the entire hash map
 func (hm *HashMap) Display() {

@@ -29,7 +29,7 @@ func greet() int {
 	return Intcmd
 
 }
-func signup_form() (string, string, string, string, []string, int) {
+func signup_form() (interface{} , string, string, string, string, []string, int , bool) {
 	fmt.Println("==Signup==")
 	fmt.Println("Please enter your information in order below:")
 	fmt.Println("First name, Last name, National ID, password, age, role")
@@ -60,7 +60,7 @@ func signup_form() (string, string, string, string, []string, int) {
 	age, err := strconv.Atoi(ageStr) // Convert age to int
 	if err != nil {
 		fmt.Println("Error: Invalid age entered.")
-		return "", "", "", "", nil, 0
+		return nil, "", "", "", "", nil, 0 , false
 	}
 
 	fmt.Print("Role: ")
@@ -83,15 +83,53 @@ func signup_form() (string, string, string, string, []string, int) {
 	// fmt.Println("Password:", password)
 	// fmt.Println("Age:", age)
 	// fmt.Println("Role:", role)
-
-	if role == "Doctor" {
-		fmt.Println("Department:", department)
-		args := []string{role, department}
-		return nationalID, firstName, lastName, password, args, age
-	} else {
+	if role == "Patient" {
 		args := []string{role}
-		return nationalID, firstName, lastName, password, args, age
+		return nil , nationalID, firstName, lastName, password, args, age , true
+	} 
+	user := &Entities.User{
+		ID:        nationalID,
+		FirstName: firstName,
+		LastName:  lastName,
+		Role:role,
+		Age : age,
+		Password:  password,
 	}
+	user.SetPassword(password)
+
+	switch role {
+
+		case "Doctor":
+			doctor := &Entities.Doctor{
+				User: *user,
+				Department: department,
+				PatientList: DataStructures.LinkedList{},
+				VisitQueue: DataStructures.NewPriorityQueue(func(a, b interface{}) bool {
+					patientA := a.(Entities.Patient)
+					patientB := b.(Entities.Patient)
+					return patientA.PriorityToVsit < patientB.PriorityToVsit
+				}),
+			}
+
+			return doctor , "" , "" , "" , "" , []string{} , 0 , false
+
+		case "DrugMan":
+			DrugMan := &Entities.DrugMan{
+				User: *user,
+			}
+			return DrugMan , "" , "" , "" , "" , []string{} , 0 , false
+
+
+		case "Triage":
+			triage := &Entities.Triage{
+				User: *user,
+			}
+			return triage , "" , "" , "" , "" , []string{} , 0 , false
+
+
+		default:
+			return nil , "" , "" , "" , "" , []string{} , 0 , false
+		}
 }
 
 func edit_form() []string {
@@ -557,6 +595,80 @@ func edit_menu(user interface{}) {
 	}
 }
 
+func Manager_menu()(int)	 {
+	// clear()
+	fmt.Println("Manager Menu")
+	fmt.Println("[1] Add employee")
+	fmt.Println("[2] See signup Queue")
+	fmt.Println("[3] Delete employee")
+	fmt.Println("[4] Exit")
+
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	Intcmd, _ := strconv.Atoi(cmd)
+	clear()
+	return Intcmd
+}
+
+func Manager_add_employee(manager Entities.Manager, DB *DataStructures.HashMap) {
+	user , _, _, _, _, _, _ , _ := signup_form()
+	Auth.SignupEntity(user, *DB)
+
+}
+
+func Manager_delete_employee(manager Entities.Manager, DB *DataStructures.HashMap) {
+
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println("==Delete employee==")
+	fmt.Print("Please enter employee National ID: ")
+
+	nationalID, _ := reader.ReadString('\n')
+	nationalID = nationalID[:len(nationalID)-1]
+
+	DB.DeleteRecursive(nationalID)
+
+}
+
+func Manager_add_entity(manager Entities.Manager, DB *DataStructures.HashMap) {
+
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println("==Wait to add an entity==")
+	fmt.Println("--------------------------------------------------------------")
+	manager.ToAddStack.PrintByPoppingCopy()
+	fmt.Println("--------------------------------------------------------------")
+
+	fmt.Println("Please enter your choice:")
+	fmt.Println("[1] Start checking emplyees")
+	fmt.Println("[2] Exit")
+
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	Intcmd, _ := strconv.Atoi(cmd)
+	clear()
+	if Intcmd == 1 {
+		fmt.Println("Please verify the entitys name by enter 1 or enter 0 to finish")
+		for !manager.ToAddStack.IsEmpty() {
+			entity, _ := manager.ToAddStack.Pop()
+			fmt.Println(entity)
+			Continue, _ := reader.ReadString('\n')
+			Continue = Continue[:len(Continue)-1]
+			if Continue == "0" {
+				continue
+			}
+			if Continue == "1" {
+				Auth.SignupEntity(entity, *DB)
+			}
+
+		}
+	} else if Intcmd == 2 {
+		return
+	}
+
+}
+
 func clear() {
 	var cmd *exec.Cmd
 
@@ -575,6 +687,9 @@ func clear() {
 func main() {
 
 	TriageList := DataStructures.LinkedList{}
+	// ToAddStack := DataStructures.Stack{}
+	ToAddStack := DataStructures.Stack{}
+
 	DataBase := DataStructures.NewHashMap(100)
 	DoctorsDB := DataStructures.NewHashMap(100)
 	CardiologyDB := DataStructures.NewHashMap(100)
@@ -591,18 +706,26 @@ func main() {
 	DataBase.Insert("DrugMans", DrugManDB)
 	DataBase.Insert("Triages", TriageDB)
 
+	Auth.Signup("121", "Alireza", "Sobhdoost", "121", []string{"Manager"}, 19, *DataBase)
+	// man , _ Auth.Login(*DataBase , "121","121")
+
 	cmd := greet()
 	clear()
 	for true {
 
 		if cmd == 1 {
 
-			NID, FirstName, Lastname, password, args, age := signup_form()
-			err := Auth.Signup(NID, FirstName, Lastname, password, args, age, *DataBase)
-			clear()
-			if err != nil {
-				log.Fatalf("Error setting password for doctor: %v", err)
+			user , NID, FirstName, Lastname, password, args, age , isPatient := signup_form()
+			if isPatient{
+				err := Auth.Signup(NID, FirstName, Lastname, password, args, age, *DataBase)
+				clear()
+				if err != nil {
+					log.Fatalf("Error setting password for doctor: %v", err)
+				} 
+			} else {
+				ToAddStack.Push(user)
 			}
+	
 
 		} else if cmd == 2 {
 
@@ -664,7 +787,25 @@ func main() {
 
 				} else if our_type == reflect.TypeOf(&Entities.Manager{}) {
 					currentUser := user.(*Entities.Manager)
-					fmt.Printf("Doctor: %v %v, Department: %v\n", currentUser.FirstName, currentUser.LastName, currentUser.Department)
+					ToAddStack.PrintByPoppingCopy()
+					currentUser.ToAddStack = &ToAddStack
+					innerCMD := Manager_menu()
+					for true {
+						if innerCMD == 1 {
+							Manager_add_employee(*currentUser , DataBase)
+						} else if innerCMD == 2 {
+							Manager_add_entity(*currentUser , DataBase)
+
+						} else if innerCMD == 3 {
+							Manager_delete_employee(*currentUser , DataBase)
+						} else if innerCMD == 4 {
+							break
+						} else if innerCMD == 5 {
+							break
+						}
+						innerCMD = Manager_menu()
+
+					}
 
 				} else if our_type == reflect.TypeOf(&Entities.DrugMan{}) {
 					currentUser := user.(*Entities.DrugMan)
@@ -704,7 +845,7 @@ func main() {
 
 			Triage_entry(*DataBase, &TriageList)
 			// TriageList.Display()
-			
+
 		} else if cmd == 4 {
 
 			break

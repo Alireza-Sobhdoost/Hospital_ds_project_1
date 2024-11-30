@@ -62,6 +62,7 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 		case "Manager":
 			manager := &Entities.Manager{
 				User: *user,
+				ToAddStack: DataStructures.NewStack() ,
 			}
 			DataBaseManagersInterface, _ := DataBase.Get("Managers")
 			DataBaseManagers := DataBaseManagersInterface.(*DataStructures.HashMap)
@@ -91,6 +92,40 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 		}
 }
 
+func SignupEntity(entity interface{}, DataBase DataStructures.HashMap) (error) {
+	// Create a base User entity
+
+	our_type := reflect.TypeOf(entity)
+	if our_type == reflect.TypeOf(&Entities.Doctor{}) {
+		userInterface := entity.(*Entities.Doctor)
+		DataBaseDoctorsInterface, _ := DataBase.Get("Doctors")
+		DataBaseDoctors := DataBaseDoctorsInterface.(*DataStructures.HashMap)
+		DepartmentInterface , _ := DataBaseDoctors.Get(userInterface.Department)
+		Department := DepartmentInterface.(*DataStructures.HashMap)
+		Department.Insert(userInterface.ID, userInterface)
+		fmt.Println("register successfull")
+		return nil
+	} else if our_type == reflect.TypeOf(&Entities.Patient{}) {
+		userInterface := entity.(*Entities.Patient)
+		DataBasePatientsInterface, _ := DataBase.Get("Patients")
+		DataBasePatients := DataBasePatientsInterface.(*DataStructures.HashMap)
+		DataBasePatients.Insert(userInterface.ID, userInterface)
+		return nil
+	} else if our_type == reflect.TypeOf(&Entities.DrugMan{}) {
+		userInterface := entity.(*Entities.DrugMan)
+		DataBaseDrugMansInterface, _ := DataBase.Get("DrugMans")
+			DataBaseDrugMans := DataBaseDrugMansInterface.(*DataStructures.HashMap)
+			DataBaseDrugMans.Insert(userInterface.ID, userInterface)
+			return nil
+	} else if our_type == reflect.TypeOf(&Entities.Triage{}) {
+		userInterface := entity.(*Entities.Triage)
+		DataBaseTriagesInterface, _ := DataBase.Get("Triages")
+		DataBaseTriages := DataBaseTriagesInterface.(*DataStructures.HashMap)
+		DataBaseTriages.Insert(userInterface.ID, userInterface)
+		return nil
+	}
+	return nil
+}
 func Login(DataBase DataStructures.HashMap ,NID, password string) (interface{}, error) {
 
 	user, ok := DataBase.GetRecursive(NID)
