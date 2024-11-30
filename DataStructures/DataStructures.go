@@ -18,7 +18,9 @@ type LinkedList struct {
 	Tail *Node 
 }
 
-
+func NewLinkedList() *LinkedList {
+	return &LinkedList{}
+}
 
 // after initiation of our linked list Ds its time to implemet its methods
 
@@ -279,6 +281,37 @@ func (pq *PriorityQueue) downHeap(index int) {
 		index = smallest
 	}
 }
+
+// Remove removes a specific value from the priority queue
+func (pq *PriorityQueue) Remove(value interface{}) error {
+	index := -1
+
+	// Find the index of the value to remove
+	for i, v := range pq.Heap {
+		if v == value {
+			index = i
+			break
+		}
+	}
+
+	if index == -1 {
+		return fmt.Errorf("value %v not found in the priority queue", value)
+	}
+
+	// Swap the found value with the last element and remove it
+	lastIndex := len(pq.Heap) - 1
+	pq.Heap[index], pq.Heap[lastIndex] = pq.Heap[lastIndex], pq.Heap[index]
+	pq.Heap = pq.Heap[:lastIndex]
+
+	// Restore Heap property
+	if index < len(pq.Heap) {
+		pq.downHeap(index)
+		pq.upHeap(index)
+	}
+
+	return nil
+}
+
 
 // Define the structure for a Hash Map
 type HashMap struct {

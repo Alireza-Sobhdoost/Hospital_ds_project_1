@@ -156,6 +156,7 @@ func choose_doc(caller Entities.Patient , DB *DataStructures.HashMap) () {
 	fmt.Println("==Choose a doctor==\n")
 	DocsList , lenght := Entities.DisplayDocs(DB)
 	DocsList.Display()
+	fmt.Println("[e] back")
 	reader := bufio.NewReader(os.Stdin)
 	cmd, _ := reader.ReadString('\n')
 	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
@@ -165,8 +166,33 @@ func choose_doc(caller Entities.Patient , DB *DataStructures.HashMap) () {
 	Intcmd , _:= strconv.Atoi(cmd)
 	clear()
 	doc_internal_pointer_var := DocsList.Find_by_index(Intcmd-1 , lenght)
-	fmt.Println(doc_internal_pointer_var)
+	// fmt.Println(doc_internal_pointer_var)
 	doc_internal_pointer_var.Data.(*Entities.Doctor).VisitQueue.Push(caller)
+	caller.DoctorList.AddToStart(doc_internal_pointer_var.Data.(*Entities.Doctor))
+	caller.DoctorList.Display()
+	fmt.Println("You have been added to the queue")
+	
+}
+
+func cancel_appointment(caller Entities.Patient) () {
+	fmt.Println("==Choose a appointment==\n")
+	caller.DoctorList.Display()
+	
+	lenght := Entities.DisplayDocsList(*caller.DoctorList)
+	fmt.Println("[e] back")
+
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	if cmd == "e" {
+		return 
+	}
+	Intcmd , _:= strconv.Atoi(cmd)
+	clear()
+	doc_internal_pointer_var := caller.DoctorList.Find_by_index(Intcmd-1 , lenght)
+	// fmt.Println(doc_internal_pointer_var)
+	doc_internal_pointer_var.Data.(*Entities.Doctor).VisitQueue.Remove(caller)
+	caller.DoctorList.Remove(doc_internal_pointer_var.Data.(*Entities.Doctor))
 	fmt.Println("You have been added to the queue")
 	
 }
@@ -317,8 +343,9 @@ func main() {
 							
 
 						} else if inner_cmd == 2 {
+							currentUser.DoctorList.Display()
+							cancel_appointment(*currentUser)
 
-							break
 						} else if inner_cmd == 3 {
 							break
 						} else if inner_cmd == 4 {

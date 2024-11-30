@@ -33,7 +33,8 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 				User: *user,
 				PriorityToVsit: 5,
 				DrugAllergies: DataStructures.NewStack(),
-				DoctorList: DataStructures.LinkedList{},
+				DoctorList: DataStructures.NewLinkedList(),
+				MedicalHistory: "",
 			}
 			DataBasePatientsInterface, _ := DataBase.Get("Patients")
 			DataBasePatients := DataBasePatientsInterface.(*DataStructures.HashMap)

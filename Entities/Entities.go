@@ -48,7 +48,7 @@ type Patient struct {
 	User
 	MedicalHistory string
 	DrugAllergies  *DataStructures.Stack
-	DoctorList     DataStructures.LinkedList
+	DoctorList     *DataStructures.LinkedList
 	PriorityToVsit int
 }
 
@@ -89,3 +89,15 @@ func DisplayDocs(hm *DataStructures.HashMap)(DataStructures.LinkedList , int)  {
 }
 
 
+func DisplayDocsList(list DataStructures.LinkedList)(int) {
+	current := list.Head
+	counter := 0
+	for current != nil {
+		fmt.Printf("[%d] ", counter+1)
+		fmt.Printf( " " +current.Data.(*Doctor).FirstName + " " + current.Data.(*Doctor).LastName + " \n")
+		current = current.Next
+		counter += 1
+	}
+
+	return counter
+}
