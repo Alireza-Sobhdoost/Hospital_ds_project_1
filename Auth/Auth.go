@@ -51,7 +51,9 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 			}
 			DataBaseDoctorsInterface, _ := DataBase.Get("Doctors")
 			DataBaseDoctors := DataBaseDoctorsInterface.(*DataStructures.HashMap)
-			DataBaseDoctors.Insert(NID, doctor)
+			DepartmentInterface , _ := DataBaseDoctors.Get(args[1])
+			Department := DepartmentInterface.(*DataStructures.HashMap)
+			Department.Insert(NID, doctor)
 			return nil
 
 		case "Manager":
@@ -70,7 +72,7 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 
 func Login(DataBase DataStructures.HashMap ,NID, password string) (interface{}, error) {
 
-	user, ok := DataBase.GetByID(NID)
+	user, ok := DataBase.GetRecursive(NID)
 	if !ok {
 		return nil, fmt.Errorf("user not found")
 	}

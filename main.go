@@ -1,19 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
-	"project_1/DataStructures" 
-	"project_1/Entities"
-	"project_1/Auth"
-	"bufio"
 	"os"
 	"os/exec"
+	"project_1/Auth"
+	"project_1/DataStructures"
+	"project_1/Entities"
+	"reflect"
 	"runtime"
 	"strconv"
-	"reflect"
-
-
 )
 
 
@@ -116,6 +114,61 @@ func login_form() (string, string) {
 
 }
 
+func Patient_menu()(int) {
+	fmt.Println("==Patient Menu==")
+	fmt.Println("Please enter your choice:")
+	fmt.Println("[1] Book an appointment")
+	fmt.Println("[2] Cancel appointments")
+	fmt.Println("[3] Edit account")
+	fmt.Println("[4] Exit")
+
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	Intcmd , _:= strconv.Atoi(cmd)
+	clear()
+	return Intcmd
+}
+
+func Book_appointment()(string) {
+	fmt.Println("==Patient Menu==")
+	fmt.Println("Please enter your choice:")
+	fmt.Println("[1] Cardiology")
+	fmt.Println("[2] Emergency")
+	fmt.Println("[3] Back")
+
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	Intcmd , _:= strconv.Atoi(cmd)
+	clear()
+
+	if Intcmd == 1 {
+		return "Cardiology"
+	} else if Intcmd == 2 {
+		return "Emergency"
+	} else {
+		return "Back"
+	}
+}
+
+func choose_doc(caller Entities.Patient , DB *DataStructures.HashMap) () {
+	fmt.Println("==Choose a doctor==\n")
+	DocsList , lenght := Entities.DisplayDocs(DB)
+	// fmt.Println("length " , lenght)
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	if cmd == "e" {
+		return 
+	}
+	Intcmd , _:= strconv.Atoi(cmd)
+	clear()
+	doc_internal_pointer_var := DocsList.Find_by_index(Intcmd-1 , lenght)
+	doc_internal_pointer_var.Data.(*Entities.Doctor).VisitQueue.Push(caller)
+	fmt.Println("You have been added to the queue")
+	
+}
 func clear() {
 	var cmd *exec.Cmd
 
@@ -135,6 +188,10 @@ func main() {
 	
 	DataBase := DataStructures.NewHashMap(100)
 	DoctorsDB := DataStructures.NewHashMap(100)
+	CardiologyDB := DataStructures.NewHashMap(100)
+	EmergencyDB := DataStructures.NewHashMap(100)
+	DoctorsDB.Insert("Cardiology" , CardiologyDB)
+	DoctorsDB.Insert("Emergency" , EmergencyDB)
 	PatientsDB := DataStructures.NewHashMap(100)
 	ManagerDB  := DataStructures.NewHashMap(100)
 	DataBase.Insert("Doctors" , DoctorsDB)
@@ -162,6 +219,7 @@ func main() {
 			if err != nil {
 				log.Fatalf("Error setting password for doctor: %v", err)
 			} else {
+				
 				our_type := reflect.TypeOf(user)
 				if our_type == reflect.TypeOf(&Entities.Doctor{}) {
 					currentUser := user.(*Entities.Doctor)
@@ -169,7 +227,30 @@ func main() {
 
 				} else if our_type == reflect.TypeOf(&Entities.Patient{}) {
 					currentUser := user.(*Entities.Patient)
-					fmt.Printf("Doctor: %v %v, Department: %v\n", currentUser.FirstName, currentUser.LastName)
+					fmt.Printf("Doctor: %v %v\n", currentUser.FirstName, currentUser.LastName)
+					inner_cmd := Patient_menu()
+
+					for true {
+						if inner_cmd == 1 {
+							clinic := Book_appointment()
+							if clinic == "Back" {
+								break
+							}
+							clinicDBInterface , _ := DoctorsDB.GetRecursive(clinic)
+							clinicDB := clinicDBInterface.(*DataStructures.HashMap)
+							choose_doc(*currentUser , clinicDB)
+							
+
+						} else if inner_cmd == 2 {
+
+							break
+						} else if inner_cmd == 3 {
+							break
+						} else if inner_cmd == 4 {
+							break
+						}
+						inner_cmd = Patient_menu()
+					}
 
 				} else if our_type == reflect.TypeOf(&Entities.Manager{}) {
 					currentUser := user.(*Entities.Manager)
@@ -186,6 +267,8 @@ func main() {
 		cmd = greet()
 		clear()
 	}
+	
+	CardiologyDB.Display()
 	
 
 

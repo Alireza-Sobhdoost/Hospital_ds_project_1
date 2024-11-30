@@ -1,6 +1,9 @@
 package DataStructures
 
-import "fmt"
+import (
+	"fmt"
+	// "project_1/Entities"
+)
 
 type Node struct {
 	Data interface{} 
@@ -41,6 +44,23 @@ func (list *LinkedList) AddToStart(data interface{}) {
 	}
 }
 
+func (ll *LinkedList) Find_by_index(index int , len int) *Node {
+	if index < 0 {
+		return nil
+	} else if index > len {
+		return nil
+	}
+    currentNode := ll.Head
+	count := 0
+	for count <= index {
+		currentNode = currentNode.Next
+		count++
+	}
+	return currentNode  // Return node if found
+
+}
+
+
 
 func (node *Node) AddDown(data interface{}) {
 	newNode := &Node{Data: data}
@@ -55,6 +75,7 @@ func (node *Node) AddDown(data interface{}) {
 		newNode.Prev = current
 	}
 }
+
 
 
 func (list *LinkedList) Remove(data interface{}) {
@@ -178,8 +199,8 @@ func NewPriorityQueue(lessFunc func(a, b interface{}) bool) *PriorityQueue {
 }
 
 // Push adds an element to the priority queue
-func (pq *PriorityQueue) Push(value interface{}) {
-	pq.heap = append(pq.heap, value)
+func (pq *PriorityQueue) Push(Value interface{}) {
+	pq.heap = append(pq.heap, Value)
 	pq.upHeap(len(pq.heap) - 1)
 }
 
@@ -249,21 +270,21 @@ func (pq *PriorityQueue) downHeap(index int) {
 
 // Define the structure for a Hash Map
 type HashMap struct {
-	buckets [][]KeyValue
+	Buckets [][]KeyValue
 	size    int
 	count   int // To keep track of number of elements in the map
 }
 
-// Define a structure for the key-value pair
+// Define a structure for the key-Value pair
 type KeyValue struct {
 	key   string
-	value interface{}
+	Value interface{}
 }
 
 // Create a new HashMap
 func NewHashMap(size int) *HashMap {
 	return &HashMap{
-		buckets: make([][]KeyValue, size),
+		Buckets: make([][]KeyValue, size),
 		size:    size,
 		count:   0,
 	}
@@ -286,7 +307,7 @@ func (hm *HashMap) resize() {
 	newBuckets := make([][]KeyValue, newSize)
 
 	// Rehash and insert existing elements into the new bucket array
-	for _, bucket := range hm.buckets {
+	for _, bucket := range hm.Buckets {
 		for _, kv := range bucket {
 			// Apply a hash function to the key (instead of trying kv.key % newSize)
 			index := hm.hash(kv.key) % newSize
@@ -294,31 +315,31 @@ func (hm *HashMap) resize() {
 		}
 	}
 
-	// Update the hash map with the resized buckets
-	hm.buckets = newBuckets
+	// Update the hash map with the resized Buckets
+	hm.Buckets = newBuckets
 	hm.size = newSize
 }
 
 
-// Insert a key-value pair
-func (hm *HashMap) Insert(key string, value interface{}) {
+// Insert a key-Value pair
+func (hm *HashMap) Insert(key string, Value interface{}) {
 	// Check if resizing is needed
 	if float64(hm.count)/float64(hm.size) > 0.80 {
 		hm.resize()
 	}
 
-	// Insert the key-value pair
+	// Insert the key-Value pair
 	index := hm.hash(key)
-	hm.buckets[index] = append(hm.buckets[index], KeyValue{key, value})
+	hm.Buckets[index] = append(hm.Buckets[index], KeyValue{key, Value})
 	hm.count++
 }
 
-// Retrieve a value for a given key
+// Retrieve a Value for a given key
 func (hm *HashMap) Get(key string) (interface{}, bool) {
 	index := hm.hash(key)
-	for _, kv := range hm.buckets[index] {
+	for _, kv := range hm.Buckets[index] {
 		if kv.key == key {
-			return kv.value, true
+			return kv.Value, true
 		}
 	}
 	return 0, false // Key not found
@@ -329,10 +350,10 @@ func (hm *HashMap) GetByID(key string) (interface{}, bool) {
 	if key == "Doctors" {
 		// Get the doctors map from the outer HashMap
 		index := hm.hash(key)
-		for _, kv := range hm.buckets[index] {
+		for _, kv := range hm.Buckets[index] {
 			if kv.key == key {
 				// Type assertion to get the inner doctors map
-				if innerMap, ok := kv.value.(*HashMap); ok {
+				if innerMap, ok := kv.Value.(*HashMap); ok {
 					return innerMap, true
 				}
 			}
@@ -340,14 +361,14 @@ func (hm *HashMap) GetByID(key string) (interface{}, bool) {
 	}
 
 	// If key is a National ID, look for it directly in the "Doctors" inner map
-	for _, bucket := range hm.buckets {
+	for _, bucket := range hm.Buckets {
 		for _, kv := range bucket {
-			if innerMap, ok := kv.value.(*HashMap); ok {
+			if innerMap, ok := kv.Value.(*HashMap); ok {
 				// Search for the doctor by National ID in the inner map
 				index := innerMap.hash(key)
-				for _, innerKV := range innerMap.buckets[index] {
+				for _, innerKV := range innerMap.Buckets[index] {
 					if innerKV.key == key {
-						return innerKV.value, true
+						return innerKV.Value, true
 					}
 				}
 			}
@@ -357,12 +378,36 @@ func (hm *HashMap) GetByID(key string) (interface{}, bool) {
 	// If the key is not found
 	return nil, false
 }
-// Delete a key-value pair
+
+func (hm *HashMap) GetRecursive(key string) (interface{}, bool) {
+	// Iterate through the Buckets of the current HashMap
+	for _, bucket := range hm.Buckets {
+		for _, kv := range bucket {
+			// If the key matches, return the Value
+			if kv.key == key {
+				return kv.Value, true
+			}
+
+			// If the Value is another HashMap, search recursively
+			if innerMap, ok := kv.Value.(*HashMap); ok {
+				result, found := innerMap.GetRecursive(key)
+				if found {
+					return result, true
+				}
+			}
+		}
+	}
+
+	// If not found, return false
+	return nil, false
+}
+
+// Delete a key-Value pair
 func (hm *HashMap) Delete(key string) {
 	index := hm.hash(key)
-	for i, kv := range hm.buckets[index] {
+	for i, kv := range hm.Buckets[index] {
 		if kv.key == key {
-			hm.buckets[index] = append(hm.buckets[index][:i], hm.buckets[index][i+1:]...)
+			hm.Buckets[index] = append(hm.Buckets[index][:i], hm.Buckets[index][i+1:]...)
 			hm.count--
 			return
 		}
@@ -371,11 +416,11 @@ func (hm *HashMap) Delete(key string) {
 
 // Display the entire hash map
 func (hm *HashMap) Display() {
-	for i, bucket := range hm.buckets {
+	for i, bucket := range hm.Buckets {
 		if len(bucket) > 0 {
 			fmt.Printf("Bucket %d: ", i)
 			for _, kv := range bucket {
-				fmt.Printf("[%s: %d] ", kv.key, kv.value)
+				fmt.Printf("[%s: %d] ", kv.key, kv.Value)
 			}
 			fmt.Println()
 		}

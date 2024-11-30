@@ -3,7 +3,7 @@ package Entities
 
 import (
 	"project_1/DataStructures"
-	// "fmt"
+	"fmt"
 	// "log"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -55,4 +55,35 @@ type Manager struct {
 	User
 	Department string
 }
+
+func DisplayDocs(hm *DataStructures.HashMap)(DataStructures.LinkedList , int)  {
+
+	doclist := DataStructures.LinkedList{}
+	count := 0
+
+	// Iterate over the buckets in the hash map
+	for _, bucket := range hm.Buckets {
+		if len(bucket) > 0 {
+			// fmt.Printf("Bucket %d: ", i)
+			for _, kv := range bucket {
+				// Safely assert that the value is a *Doctor
+				doc, ok := kv.Value.(*Doctor)
+				if ok {
+					fmt.Printf("[%d] Dr.%s %s ", count+1, doc.FirstName, doc.LastName)
+					doclist.AddToEnd(doc)
+					count += 1
+
+				} else {
+					fmt.Printf("[Unknown value type] ")
+				}
+				fmt.Println()
+
+			}
+			fmt.Println()
+		}
+	}
+
+	return doclist , count
+}
+
 
