@@ -44,17 +44,22 @@ func (list *LinkedList) AddToStart(data interface{}) {
 	}
 }
 
-func (ll *LinkedList) Find_by_index(index int , len int) *Node {
+func (ll *LinkedList) Find_by_index(index int , len int)(*Node) {
 	if index < 0 {
+		fmt.Println("Invalid index")
 		return nil
 	} else if index > len {
+		fmt.Println("Invalid index2")
+
 		return nil
-	}
+	} 
     currentNode := ll.Head
 	count := 0
-	for count <= index {
+	for count < index {
+
 		currentNode = currentNode.Next
-		count++
+		fmt.Println("currentNode" , currentNode)
+		count += 1
 	}
 	return currentNode  // Return node if found
 
@@ -186,36 +191,36 @@ func (q *Queue) IsEmpty() bool {
 
 
 type PriorityQueue struct {
-	heap []interface{}
+	Heap []interface{}
 	less func(a, b interface{}) bool // Comparison function
 }
 
 // NewPriorityQueue creates a new PriorityQueue
 func NewPriorityQueue(lessFunc func(a, b interface{}) bool) *PriorityQueue {
 	return &PriorityQueue{
-		heap: []interface{}{},
+		Heap: []interface{}{},
 		less: lessFunc,
 	}
 }
 
 // Push adds an element to the priority queue
 func (pq *PriorityQueue) Push(Value interface{}) {
-	pq.heap = append(pq.heap, Value)
-	pq.upHeap(len(pq.heap) - 1)
+	pq.Heap = append(pq.Heap, Value)
+	pq.upHeap(len(pq.Heap) - 1)
 }
 
 // Pop removes and returns the smallest element (root) from the priority queue
 func (pq *PriorityQueue) Pop() (interface{}, error) {
-	if len(pq.heap) == 0 {
+	if len(pq.Heap) == 0 {
 		return nil, fmt.Errorf("priority queue is empty")
 	}
 
 	// Swap the root with the last element and remove the last element
-	root := pq.heap[0]
-	pq.heap[0] = pq.heap[len(pq.heap)-1]
-	pq.heap = pq.heap[:len(pq.heap)-1]
+	root := pq.Heap[0]
+	pq.Heap[0] = pq.Heap[len(pq.Heap)-1]
+	pq.Heap = pq.Heap[:len(pq.Heap)-1]
 
-	// Restore the heap property
+	// Restore the Heap property
 	pq.downHeap(0)
 
 	return root, nil
@@ -223,47 +228,47 @@ func (pq *PriorityQueue) Pop() (interface{}, error) {
 
 // Peek returns the smallest element without removing it
 func (pq *PriorityQueue) Peek() (interface{}, error) {
-	if len(pq.heap) == 0 {
+	if len(pq.Heap) == 0 {
 		return nil, fmt.Errorf("priority queue is empty")
 	}
-	return pq.heap[0], nil
+	return pq.Heap[0], nil
 }
 
 // IsEmpty checks if the priority queue is empty
 func (pq *PriorityQueue) IsEmpty() bool {
-	return len(pq.heap) == 0
+	return len(pq.Heap) == 0
 }
 
-// upHeap restores the heap property by moving the element at index up
+// upHeap restores the Heap property by moving the element at index up
 func (pq *PriorityQueue) upHeap(index int) {
 	for index > 0 {
 		parent := (index - 1) / 2
-		if !pq.less(pq.heap[index], pq.heap[parent]) {
+		if !pq.less(pq.Heap[index], pq.Heap[parent]) {
 			break
 		}
-		pq.heap[index], pq.heap[parent] = pq.heap[parent], pq.heap[index]
+		pq.Heap[index], pq.Heap[parent] = pq.Heap[parent], pq.Heap[index]
 		index = parent
 	}
 }
 
-// downHeap restores the heap property by moving the element at index down
+// downHeap restores the Heap property by moving the element at index down
 func (pq *PriorityQueue) downHeap(index int) {
-	lastIndex := len(pq.heap) - 1
+	lastIndex := len(pq.Heap) - 1
 	for {
 		leftChild := 2*index + 1
 		rightChild := 2*index + 2
 		smallest := index
 
-		if leftChild <= lastIndex && pq.less(pq.heap[leftChild], pq.heap[smallest]) {
+		if leftChild <= lastIndex && pq.less(pq.Heap[leftChild], pq.Heap[smallest]) {
 			smallest = leftChild
 		}
-		if rightChild <= lastIndex && pq.less(pq.heap[rightChild], pq.heap[smallest]) {
+		if rightChild <= lastIndex && pq.less(pq.Heap[rightChild], pq.Heap[smallest]) {
 			smallest = rightChild
 		}
 		if smallest == index {
 			break
 		}
-		pq.heap[index], pq.heap[smallest] = pq.heap[smallest], pq.heap[index]
+		pq.Heap[index], pq.Heap[smallest] = pq.Heap[smallest], pq.Heap[index]
 		index = smallest
 	}
 }

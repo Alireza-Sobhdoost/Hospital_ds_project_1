@@ -155,7 +155,7 @@ func Book_appointment()(string) {
 func choose_doc(caller Entities.Patient , DB *DataStructures.HashMap) () {
 	fmt.Println("==Choose a doctor==\n")
 	DocsList , lenght := Entities.DisplayDocs(DB)
-	// fmt.Println("length " , lenght)
+	DocsList.Display()
 	reader := bufio.NewReader(os.Stdin)
 	cmd, _ := reader.ReadString('\n')
 	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
@@ -165,8 +165,42 @@ func choose_doc(caller Entities.Patient , DB *DataStructures.HashMap) () {
 	Intcmd , _:= strconv.Atoi(cmd)
 	clear()
 	doc_internal_pointer_var := DocsList.Find_by_index(Intcmd-1 , lenght)
+	fmt.Println(doc_internal_pointer_var)
 	doc_internal_pointer_var.Data.(*Entities.Doctor).VisitQueue.Push(caller)
 	fmt.Println("You have been added to the queue")
+	
+}
+
+func Doctor_menu(doc Entities.Doctor)(int) {
+
+
+	fmt.Println("==Doctor Menu==")
+	fmt.Println("Hello Dr. " , doc.FirstName , " " , doc.LastName)
+	fmt.Println("----------------to visit list----------------")
+	fmt.Println("Patient	Firstname	Lastname	Age		ID")
+	count := 0
+	for i, value := range doc.VisitQueue.Heap {
+		patient := value.(Entities.Patient)
+		fmt.Printf("[%d] %s %s %d %s\n", i+1, patient.FirstName, patient.LastName, patient.Age, patient.ID) // Use %v to handle generic types
+		count += 1
+	}
+	if count == 0 {
+		fmt.Println("There is no one to visit")
+	} else {
+		fmt.Println("There are " , count , " patients to visit")
+	}
+
+	fmt.Println("---------------------------------------------")
+
+	fmt.Println("[1] Start to visit")
+	fmt.Println("[2] Edit account")
+	fmt.Println("[3] Exit")
+
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	Intcmd , _:= strconv.Atoi(cmd)
+	return Intcmd
 	
 }
 func clear() {
@@ -223,18 +257,29 @@ func main() {
 				our_type := reflect.TypeOf(user)
 				if our_type == reflect.TypeOf(&Entities.Doctor{}) {
 					currentUser := user.(*Entities.Doctor)
-					fmt.Printf("Doctor: %v %v, Department: %v\n", currentUser.FirstName, currentUser.LastName, currentUser.Department)
+					choice := Doctor_menu(*currentUser)
+					for true {
+						if choice == 1 {
+							p , _:= currentUser.VisitQueue.Pop()
+							patient := p.(Entities.Patient)
+							currentUser.PatientList.AddToStart(patient)
 
+						} else if choice == 2 {
+							break
+						} else if choice == 3 {
+							break
+						}
+						choice = Doctor_menu(*currentUser)
+					}
 				} else if our_type == reflect.TypeOf(&Entities.Patient{}) {
 					currentUser := user.(*Entities.Patient)
-					fmt.Printf("Doctor: %v %v\n", currentUser.FirstName, currentUser.LastName)
 					inner_cmd := Patient_menu()
-
 					for true {
 						if inner_cmd == 1 {
 							clinic := Book_appointment()
 							if clinic == "Back" {
-								break
+								// break
+								continue
 							}
 							clinicDBInterface , _ := DoctorsDB.GetRecursive(clinic)
 							clinicDB := clinicDBInterface.(*DataStructures.HashMap)
@@ -247,6 +292,7 @@ func main() {
 						} else if inner_cmd == 3 {
 							break
 						} else if inner_cmd == 4 {
+							// back = true
 							break
 						}
 						inner_cmd = Patient_menu()
@@ -258,7 +304,8 @@ func main() {
 
 				}
 
-				break
+				// break
+				// continue
 			}	
 		} else if cmd == 3 {
 
