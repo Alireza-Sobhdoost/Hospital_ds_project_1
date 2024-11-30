@@ -6,6 +6,7 @@ import (
 	"fmt"
 	// "log"
 	"golang.org/x/crypto/bcrypt"
+
 )
 
 // Base User struct
@@ -122,3 +123,4 @@ func DisplayPatList(list DataStructures.LinkedList)(int) {
 
 	return counter
 }
+
