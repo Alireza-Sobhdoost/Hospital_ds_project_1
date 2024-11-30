@@ -254,6 +254,70 @@ func visit(patient Entities.Patient)() {
 	}
 
 }
+
+func DrugStore_menu()(int) {
+
+	fmt.Println("==Drug Store Menu==")
+	fmt.Println("Please enter your choice:")
+	fmt.Println("[1] Customer Service")
+	fmt.Println("[2] Edit account")
+	fmt.Println("[3] Exit")
+
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	Intcmd , _:= strconv.Atoi(cmd)
+	clear()
+	return Intcmd
+	
+}
+
+func DrugStore_Csevent(drugman Entities.DrugMan , DB *DataStructures.HashMap)() {
+
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println("==Drug Store Menu==")
+	fmt.Println("Please enter your Customer ID :")
+
+	nationalID, _ := reader.ReadString('\n')
+	nationalID = nationalID[:len(nationalID)-1]
+
+	custumer , _ := DB.GetRecursive(nationalID)
+	petient := custumer.(*Entities.Patient)
+	clear()
+	fmt.Println("==Customer Drugs==")
+	fmt.Println("--------------------------------------------------------------")
+	petient.DrugAllergies.PrintByPoppingCopy()
+	fmt.Println("--------------------------------------------------------------")
+
+	fmt.Println("Please enter your choice:")
+	fmt.Println("[1] Start making Drugs")
+	fmt.Println("[2] Exit")
+
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+	Intcmd , _:= strconv.Atoi(cmd)
+	clear()
+	if Intcmd == 1 {
+		fmt.Println("Please verify the drugs name by enter 1 or enter 0 to finish")
+		for !petient.DrugAllergies.IsEmpty(){
+			drug , _ := petient.DrugAllergies.Peek()
+			fmt.Println(drug.(string))
+			Continue, _ := reader.ReadString('\n')
+			Continue = Continue[:len(Continue)-1]
+			if Continue == "0" {
+				break
+			}
+			if Continue == "1" {
+				petient.DrugAllergies.Pop()
+			}
+			
+		}
+	} else if Intcmd == 2 {
+		return
+	}
+	
+}
 func clear() {
 	var cmd *exec.Cmd
 
@@ -279,9 +343,12 @@ func main() {
 	DoctorsDB.Insert("Emergency" , EmergencyDB)
 	PatientsDB := DataStructures.NewHashMap(100)
 	ManagerDB  := DataStructures.NewHashMap(100)
+	DrugManDB := DataStructures.NewHashMap(100)
 	DataBase.Insert("Doctors" , DoctorsDB)
 	DataBase.Insert("Patients", PatientsDB)
 	DataBase.Insert("Managers" , ManagerDB)
+	DataBase.Insert("DrugMans" , DrugManDB)
+
 	
 	cmd := greet()
 	clear()
@@ -358,6 +425,11 @@ func main() {
 				} else if our_type == reflect.TypeOf(&Entities.Manager{}) {
 					currentUser := user.(*Entities.Manager)
 					fmt.Printf("Doctor: %v %v, Department: %v\n", currentUser.FirstName, currentUser.LastName, currentUser.Department)
+
+				} else if our_type == reflect.TypeOf(&Entities.DrugMan{}) {
+					currentUser := user.(*Entities.DrugMan)
+					DrugStore_Csevent(*currentUser , DataBase)
+
 
 				}
 

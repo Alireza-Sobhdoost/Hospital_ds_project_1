@@ -68,6 +68,16 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 			DataBaseManagers.Insert(NID, manager)
 			return nil
 
+		case "DrugMan":
+			DrugMan := &Entities.DrugMan{
+				User: *user,
+			}
+			DataBaseDrugMansInterface, _ := DataBase.Get("DrugMans")
+			DataBaseDrugMans := DataBaseDrugMansInterface.(*DataStructures.HashMap)
+			DataBaseDrugMans.Insert(NID, DrugMan)
+			return nil
+
+
 		default:
 			return fmt.Errorf("invalid role: %s", args[0])
 		}
@@ -94,6 +104,12 @@ func Login(DataBase DataStructures.HashMap ,NID, password string) (interface{}, 
 		return userInterface, nil
 	} else if our_type == reflect.TypeOf(&Entities.Manager{}) {
 		userInterface := user.(*Entities.Manager)
+		if !userInterface.ValidatePassword(password) {
+			return nil, fmt.Errorf("invalid password")
+		}
+		return userInterface, nil
+	} else if our_type == reflect.TypeOf(&Entities.DrugMan{}) {
+		userInterface := user.(*Entities.DrugMan)
 		if !userInterface.ValidatePassword(password) {
 			return nil, fmt.Errorf("invalid password")
 		}

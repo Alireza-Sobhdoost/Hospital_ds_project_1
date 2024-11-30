@@ -58,6 +58,12 @@ type Manager struct {
 	Department string
 }
 
+type DrugMan struct {
+	User
+	Department string
+}
+
+
 func DisplayDocs(hm *DataStructures.HashMap)(DataStructures.LinkedList , int)  {
 
 	doclist := DataStructures.LinkedList{}

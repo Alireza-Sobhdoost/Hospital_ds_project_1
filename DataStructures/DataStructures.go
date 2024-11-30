@@ -155,7 +155,23 @@ func (s *Stack) Peek() (interface{}, error) {
 	}
 	return s.items[len(s.items)-1], nil
 }
+func (s *Stack) Copy() *Stack {
+	// Create a new stack and copy the items
+	newStack := &Stack{
+		items: make([]interface{}, len(s.items)),
+	}
+	copy(newStack.items, s.items) // Copy the slice
+	return newStack
+}
 
+func (s *Stack) PrintByPoppingCopy() {
+	copiedStack := s.Copy()
+	fmt.Println("Printing stack elements by popping a copy:")
+	for !copiedStack.IsEmpty() {
+		element, _ := copiedStack.Pop()
+		fmt.Println(element)
+	}
+}
 func (s *Stack) IsEmpty() bool {
 	return len(s.items) == 0
 }
