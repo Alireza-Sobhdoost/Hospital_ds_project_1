@@ -60,7 +60,9 @@ type Manager struct {
 
 type DrugMan struct {
 	User
-	Department string
+}
+type Triage struct {
+	User
 }
 
 
@@ -101,6 +103,19 @@ func DisplayDocsList(list DataStructures.LinkedList)(int) {
 	for current != nil {
 		fmt.Printf("[%d] ", counter+1)
 		fmt.Printf( " " +current.Data.(*Doctor).FirstName + " " + current.Data.(*Doctor).LastName + " \n")
+		current = current.Next
+		counter += 1
+	}
+
+	return counter
+}
+
+func DisplayPatList(list DataStructures.LinkedList)(int) {
+	current := list.Head
+	counter := 0
+	for current != nil {
+		fmt.Printf("[%d] ", counter+1)
+		fmt.Printf( " " +current.Data.(*Patient).FirstName + " " + current.Data.(*Patient).LastName + current.Data.(*Patient).ID  + " \n")
 		current = current.Next
 		counter += 1
 	}

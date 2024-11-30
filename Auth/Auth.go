@@ -77,6 +77,14 @@ func Signup(NID, firstName, lastName, password string, args []string , age int, 
 			DataBaseDrugMans.Insert(NID, DrugMan)
 			return nil
 
+		case "Triage":
+			DrugMan := &Entities.Triage{
+				User: *user,
+			}
+			DataBaseTriagesInterface, _ := DataBase.Get("Triages")
+			DataBaseTriages := DataBaseTriagesInterface.(*DataStructures.HashMap)
+			DataBaseTriages.Insert(NID, DrugMan)
+			return nil
 
 		default:
 			return fmt.Errorf("invalid role: %s", args[0])
@@ -110,6 +118,12 @@ func Login(DataBase DataStructures.HashMap ,NID, password string) (interface{}, 
 		return userInterface, nil
 	} else if our_type == reflect.TypeOf(&Entities.DrugMan{}) {
 		userInterface := user.(*Entities.DrugMan)
+		if !userInterface.ValidatePassword(password) {
+			return nil, fmt.Errorf("invalid password")
+		}
+		return userInterface, nil
+	} else if our_type == reflect.TypeOf(&Entities.Triage{}) {
+		userInterface := user.(*Entities.Triage)
 		if !userInterface.ValidatePassword(password) {
 			return nil, fmt.Errorf("invalid password")
 		}

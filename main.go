@@ -20,7 +20,8 @@ func greet()(int) {
 	fmt.Println("Wellcome to our Hospital. How can we help you?")
 	fmt.Println("[1] Sign up")
 	fmt.Println("[2] Login")
-	fmt.Println("[3] Exit")
+	fmt.Println("[3] Emergency")
+	fmt.Println("[4] Exit")
 
 	reader := bufio.NewReader(os.Stdin)
 	cmd, _ := reader.ReadString('\n')
@@ -318,6 +319,57 @@ func DrugStore_Csevent(drugman Entities.DrugMan , DB *DataStructures.HashMap)() 
 	}
 	
 }
+
+func Triage_entry(DB DataStructures.HashMap , list *DataStructures.LinkedList)(){
+	fmt.Println("==Triage==")
+	fmt.Println("Please enter your NID:")
+
+	reader := bufio.NewReader(os.Stdin)
+	nationalID, _ := reader.ReadString('\n')
+	nationalID = nationalID[:len(nationalID)-1]
+
+	custumer , _ := DB.GetRecursive(nationalID)
+	if custumer == nil {
+		args := []string{"Patient"}
+		Auth.Signup( nationalID , "" , "" , nationalID , args, 0,DB)
+		custumer , _ = DB.GetRecursive(nationalID)
+	}
+	petient := custumer.(*Entities.Patient)
+	fmt.Println(petient.ID)
+	list.AddToStart(petient)
+	
+}
+
+func Triage_agent(EmergencyDB DataStructures.HashMap , list DataStructures.LinkedList)(){
+	fmt.Println("==Triage==")
+	fmt.Println("See Petaints : ")
+	fmt.Println("--------------------------------------------------------------")
+	lenght := Entities.DisplayPatList(list)
+	fmt.Println("--------------------------------------------------------------")
+
+	reader := bufio.NewReader(os.Stdin)
+	cmd, _ := reader.ReadString('\n')
+	cmd = cmd[:len(cmd)-1] // Remove the trailing newline character
+
+	if cmd == "e" {
+		return
+	}
+	Intcmd , _:= strconv.Atoi(cmd)
+
+	custumer := list.Find_by_index(Intcmd-1 , lenght)
+
+	fmt.Println("Please set a proitery :")
+
+	pr, _ := reader.ReadString('\n')
+	pr = pr[:len(pr)-1] // Remove the trailing newline character
+	Intpr , _:= strconv.Atoi(pr)
+	custumer.Data.(*Entities.Patient).PriorityToVsit = Intpr
+	choose_doc(*custumer.Data.(*Entities.Patient) ,&EmergencyDB )
+	list.Remove(custumer.Data)
+
+
+	
+}
 func clear() {
 	var cmd *exec.Cmd
 
@@ -335,9 +387,11 @@ func clear() {
 }
 func main() {
 	
+	TriageList := DataStructures.LinkedList{}
 	DataBase := DataStructures.NewHashMap(100)
 	DoctorsDB := DataStructures.NewHashMap(100)
 	CardiologyDB := DataStructures.NewHashMap(100)
+	TriageDB := DataStructures.NewHashMap(100)
 	EmergencyDB := DataStructures.NewHashMap(100)
 	DoctorsDB.Insert("Cardiology" , CardiologyDB)
 	DoctorsDB.Insert("Emergency" , EmergencyDB)
@@ -348,6 +402,8 @@ func main() {
 	DataBase.Insert("Patients", PatientsDB)
 	DataBase.Insert("Managers" , ManagerDB)
 	DataBase.Insert("DrugMans" , DrugManDB)
+	DataBase.Insert("Triages" , TriageDB)
+
 
 	
 	cmd := greet()
@@ -429,14 +485,19 @@ func main() {
 				} else if our_type == reflect.TypeOf(&Entities.DrugMan{}) {
 					currentUser := user.(*Entities.DrugMan)
 					DrugStore_Csevent(*currentUser , DataBase)
-
-
+				} else if our_type == reflect.TypeOf(&Entities.Triage{}) {
+					// _ := user.(*Entities.Triage)
+					Triage_agent( *EmergencyDB , TriageList)
 				}
 
 				// break
 				// continue
 			}	
 		} else if cmd == 3 {
+
+			Triage_entry(*DataBase , &TriageList)
+			TriageList.Display()
+		} else if cmd == 4 {
 
 			break
 		}
