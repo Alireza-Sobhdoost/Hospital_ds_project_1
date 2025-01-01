@@ -6,16 +6,16 @@ import (
 )
 
 type Node struct {
-	Data interface{} 
-	Next *Node       
-	Prev *Node       
-	Down *Node       
+	Data interface{}
+	Next *Node
+	Prev *Node
+	Down *Node
 }
 
 // this LinkedList here represents the General two way (dublle) linked list
 type LinkedList struct {
 	Head *Node
-	Tail *Node 
+	Tail *Node
 }
 
 func NewLinkedList() *LinkedList {
@@ -48,7 +48,7 @@ func (list *LinkedList) AddToStart(data interface{}) {
 	}
 }
 
-func (ll *LinkedList) Find_by_index(index int , len int)(*Node) {
+func (ll *LinkedList) Find_by_index(index int, len int) *Node {
 	if index < 0 {
 		fmt.Println("Invalid index")
 		return nil
@@ -56,20 +56,18 @@ func (ll *LinkedList) Find_by_index(index int , len int)(*Node) {
 		fmt.Println("Invalid index2")
 
 		return nil
-	} 
-    currentNode := ll.Head
+	}
+	currentNode := ll.Head
 	count := 0
 	for count < index {
 
 		currentNode = currentNode.Next
-		fmt.Println("currentNode" , currentNode)
+		fmt.Println("currentNode", currentNode)
 		count += 1
 	}
-	return currentNode  // Return node if found
+	return currentNode // Return node if found
 
 }
-
-
 
 func (node *Node) AddDown(data interface{}) {
 	newNode := &Node{Data: data}
@@ -85,8 +83,6 @@ func (node *Node) AddDown(data interface{}) {
 	}
 }
 
-
-
 func (list *LinkedList) Remove(data interface{}) {
 	if list.Head == nil {
 		return
@@ -94,7 +90,7 @@ func (list *LinkedList) Remove(data interface{}) {
 	current := list.Head
 	for current != nil {
 		if current.Data == data {
-		
+
 			if current.Prev != nil {
 				current.Prev.Next = current.Next
 			} else {
@@ -103,12 +99,55 @@ func (list *LinkedList) Remove(data interface{}) {
 			if current.Next != nil {
 				current.Next.Prev = current.Prev
 			} else {
-				list.Tail = current.Prev 
+				list.Tail = current.Prev
 			}
 			break
 		}
 		current = current.Next
 	}
+}
+
+// IsEmpty checks if the linked list is empty
+func (list *LinkedList) IsEmpty() bool {
+    return list.Head == nil
+}
+
+// Delete removes the first occurrence of data in the linked list
+func (list *LinkedList) Delete(data interface{}) bool {
+	if list.IsEmpty() {
+		return false
+	}
+
+	if list.Head.Data == data {
+		list.Head = list.Head.Next
+		if list.Head == nil {
+			list.Tail = nil
+		} else {
+			list.Head.Prev = nil
+		}
+		return true
+	}
+
+	current := list.Head
+	for current != nil && current.Data != data {
+		current = current.Next
+	}
+
+	if current == nil {
+		return false
+	}
+
+	if current.Next != nil {
+		current.Next.Prev = current.Prev
+	} else {
+		list.Tail = current.Prev
+	}
+
+	if current.Prev != nil {
+		current.Prev.Next = current.Next
+	}
+
+	return true
 }
 
 func (list *LinkedList) Display() {
@@ -126,6 +165,38 @@ func (list *LinkedList) Display() {
 	fmt.Println("nil")
 }
 
+func (list *LinkedList) DisplayDrugs() int {
+	if list.IsEmpty() {
+		fmt.Println("No drugs to display")
+		return 0
+	}
+
+	fmt.Println("\nDrug List:")
+	fmt.Println("--------------------------------------------------------------------------------------")
+	fmt.Printf("%-5s %-10s %-20s %-15s %-8s %-8s %-5s\n", "No.", "ID", "Name", "Dose", "Type", "Price", "Count")
+	fmt.Println("--------------------------------------------------------------------------------------")
+	
+
+	current := list.Head
+	count := 0
+	for current != nil {
+		if drug, ok := current.Data.(*DrugNode); ok {
+			count++
+			fmt.Printf("[%-3d] %-10s %-20s %-15s %-8s $%.2f %d\n", 
+				count, 
+				drug.ID, 
+				drug.Name,
+				drug.Dose, 
+				drug.Type, 
+				drug.Price,
+				drug.Count)
+		}
+		current = current.Next
+	}
+	fmt.Println("--------------------------------------------------------------------------------------")
+
+	return count
+}
 
 // implementing stack DS
 
@@ -166,7 +237,7 @@ func (s *Stack) Copy() *Stack {
 
 func (s *Stack) PrintByPoppingCopy() {
 	copiedStack := s.Copy()
-	fmt.Println("Printing stack elements by popping a copy:")
+	// fmt.Println("Printing stack elements by popping a copy:")
 	for !copiedStack.IsEmpty() {
 		element, _ := copiedStack.Pop()
 		fmt.Println(element)
@@ -178,7 +249,7 @@ func (s *Stack) IsEmpty() bool {
 
 func NewStack() *Stack {
 	return &Stack{
-		items : [] interface{}{},
+		items: []interface{}{},
 	}
 }
 
@@ -213,7 +284,6 @@ func (q *Queue) Peek() (interface{}, error) {
 func (q *Queue) IsEmpty() bool {
 	return len(q.items) == 0
 }
-
 
 type PriorityQueue struct {
 	Heap []interface{}
@@ -328,7 +398,6 @@ func (pq *PriorityQueue) Remove(value interface{}) error {
 	return nil
 }
 
-
 // Define the structure for a Hash Map
 type HashMap struct {
 	Buckets [][]KeyValue
@@ -380,7 +449,6 @@ func (hm *HashMap) resize() {
 	hm.Buckets = newBuckets
 	hm.size = newSize
 }
-
 
 // Insert a key-Value pair
 func (hm *HashMap) Insert(key string, Value interface{}) {
@@ -489,7 +557,6 @@ func (hm *HashMap) DeleteRecursive(key string) bool {
 	return false
 }
 
-
 // Display the entire hash map
 func (hm *HashMap) Display() {
 	for i, bucket := range hm.Buckets {
@@ -502,8 +569,6 @@ func (hm *HashMap) Display() {
 		}
 	}
 }
-
-
 
 // DataBase := DataStructures.NewHashMap(100)
 // user , err := Auth.Signup("1", "John", "Doe", "password", "Patient", 20)

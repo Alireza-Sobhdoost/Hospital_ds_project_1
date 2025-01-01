@@ -1,12 +1,11 @@
 package Entities
 
-
 import (
-	"project_1/DataStructures"
 	"fmt"
+	"project_1/DataStructures"
+
 	// "log"
 	"golang.org/x/crypto/bcrypt"
-
 )
 
 // Base User struct
@@ -14,8 +13,8 @@ type User struct {
 	ID        string
 	FirstName string
 	LastName  string
-	Age int
-	Role string
+	Age       int
+	Role      string
 	Password  string // Store the hashed password
 }
 
@@ -37,12 +36,11 @@ func (u *User) ValidatePassword(password string) bool {
 
 // Doctor struct (inherits from User)
 type Doctor struct {
-    User
-    Department  string
-    PatientList DataStructures.LinkedList
-    VisitQueue  *DataStructures.PriorityQueue // Change to pointer
+	User
+	Department  string
+	PatientList DataStructures.LinkedList
+	VisitQueue  *DataStructures.PriorityQueue // Change to pointer
 }
-
 
 // Patient struct (inherits from User)
 type Patient struct {
@@ -56,9 +54,8 @@ type Patient struct {
 // Manager struct (inherits from User)
 type Manager struct {
 	User
-	Department string  
-	ToAddStack  *DataStructures.Stack
-
+	Department string
+	ToAddStack *DataStructures.Stack
 }
 
 type DrugMan struct {
@@ -68,8 +65,7 @@ type Triage struct {
 	User
 }
 
-
-func DisplayDocs(hm *DataStructures.HashMap)(DataStructures.LinkedList , int)  {
+func DisplayDocs(hm *DataStructures.HashMap) (DataStructures.LinkedList, int) {
 
 	doclist := DataStructures.LinkedList{}
 	count := 0
@@ -96,16 +92,15 @@ func DisplayDocs(hm *DataStructures.HashMap)(DataStructures.LinkedList , int)  {
 		}
 	}
 
-	return doclist , count
+	return doclist, count
 }
 
-
-func DisplayDocsList(list DataStructures.LinkedList)(int) {
+func DisplayDocsList(list DataStructures.LinkedList) int {
 	current := list.Head
 	counter := 0
 	for current != nil {
 		fmt.Printf("[%d] ", counter+1)
-		fmt.Printf( " " +current.Data.(*Doctor).FirstName + " " + current.Data.(*Doctor).LastName + " \n")
+		fmt.Printf(" " + current.Data.(*Doctor).FirstName + " " + current.Data.(*Doctor).LastName + " \n")
 		current = current.Next
 		counter += 1
 	}
@@ -113,12 +108,12 @@ func DisplayDocsList(list DataStructures.LinkedList)(int) {
 	return counter
 }
 
-func DisplayPatList(list DataStructures.LinkedList)(int) {
+func DisplayPatList(list DataStructures.LinkedList) int {
 	current := list.Head
 	counter := 0
 	for current != nil {
 		fmt.Printf("[%d] ", counter+1)
-		fmt.Printf( " " +current.Data.(*Patient).FirstName + " " + current.Data.(*Patient).LastName + current.Data.(*Patient).ID  + " \n")
+		fmt.Printf(" " + current.Data.(Patient).FirstName + " " + current.Data.(Patient).LastName + current.Data.(Patient).ID + " \n")
 		current = current.Next
 		counter += 1
 	}
@@ -126,3 +121,15 @@ func DisplayPatList(list DataStructures.LinkedList)(int) {
 	return counter
 }
 
+func DisplayPatList2(list DataStructures.LinkedList) int {
+	current := list.Head
+	counter := 0
+	for current != nil {
+		fmt.Printf("[%d] ", counter+1)
+		fmt.Printf(" " + current.Data.(*Patient).FirstName + " " + current.Data.(*Patient).LastName + current.Data.(*Patient).ID + " \n")
+		current = current.Next
+		counter += 1
+	}
+
+	return counter
+}
